@@ -18,57 +18,33 @@ Store managers oversee thousands of SKUs across multiple locations with shifting
 
 ---
 
-## Core Features
-- **Deterministic Analytics Engine**: Computes exact run-rates, days of supply ($\frac{\text{Current Stock}}{\text{Average Daily Sales}}$), and velocity shifts in pure Python and SQLite.
-- **Configurable Thresholds**: Live manager tuning of safety stock day buffers, overstock limits, and spike multipliers via the UI.
-- **Grounded GenAI Copilot**: Gemini interprets queries and reasons over structured Python calculations without hallucinating statistics. Seamless local fallback engine if `GEMINI_API_KEY` is not set or network is offline.
-- **Attention Required Command Center**: High-visibility operational alert feed categorizing issues into `URGENT`, `WARNING`, and `OPPORTUNITY`.
-- **Interactive Multi-Store Dashboard**: Real-time KPI summary cards, 30-day sales trajectory line charts, top revenue generators, stock level buffers, and category share of wallet using Chart.js.
-- **Full Inventory Matrix**: Searchable catalogue with SKU-level velocity, days of stock, and automated health classification.
-
----
-
-## Architecture
+## Clean Service-Layer Architecture
 
 ```text
- ┌─────────────────────────────────────────────────────────────┐
- │                      Frontend Client                        │
- │    Single-Page Web Application (HTML5, Vanilla CSS, JS)     │
- │    Chart.js Visualizations & Natural Language Chat UI       │
- └──────────────────────────────┬──────────────────────────────┘
-                                │ HTTP / REST (Port 8000)
- ┌──────────────────────────────▼──────────────────────────────┐
- │                    FastAPI Backend (app.py)                 │
- ├─────────────────────────────────────────────────────────────┤
- │  • Static Asset Mount (`/static`, `/`)                      │
- │  • REST Endpoints (`/api/dashboard`, `/api/alerts`, etc.)   │
- │  • Copilot Query Pipeline (`/api/chat`)                     │
- └──────────────┬──────────────────────────────┬───────────────┘
-                │                              │
- ┌──────────────▼─────────────┐ ┌──────────────▼───────────────┐
- │   Deterministic Analytics  │ │     Grounded Gemini AI      │
- │        (src/rules.py &     │ │   (src/gemini_service.py)   │
- │        src/analytics.py)   │ │  • Structured Prompting     │
- │  • Days of Supply          │ │  • Epistemic Honesty Rules  │
- │  • Stockout Detection      │ │  • Zero Hallucinations      │
- │  • Overstock & Slow-Moving │ │  • Offline Fallback Engine  │
- │  • Spikes & Drops          │ └──────────────┬───────────────┘
- └──────────────┬─────────────┘                │ GEMINI_API_KEY
-                │                              │ (Only External API)
- ┌──────────────▼──────────────────────────────▼───────────────┐
- │                  Local SQLite Persistence                   │
- │                     (retail_copilot.db)                     │
- │      Stores  │  Products  │  Daily Sales  │  Inventory     │
- └─────────────────────────────────────────────────────────────┘
+app.py                              # FastAPI startup, route registration, static mounting
+src/
+├── database.py                     # Safe parameterized SQLite queries & indexes
+├── models.py                       # Core domain entity dataclasses
+├── schemas.py                      # Pydantic request/response & Evidence contracts
+├── rules.py                        # Thread-safe configurable inventory & sales rules
+├── analytics.py                    # Analytics facade coordinating modular services
+├── sales_service.py                # Period comparisons, top/lowest sellers, volume & revenue
+├── inventory_service.py            # Run-rates, stockout forecasting, turnover & reorder math
+├── recommendation_service.py       # Deterministic business findings, evidence, assumptions, actions
+├── chat_service.py                 # Natural-language intent routing & grounded orchestration
+├── gemini_service.py               # Pure Gemini API communication (gemini-2.5-flash)
+└── utils.py                        # Safe math division, date windows, logging, and env loading
+tests/
+└── test_backend.py                 # Automated unit and integration test suite (pytest)
 ```
 
 ---
 
 ## Tech Stack
-- **Backend**: Python 3.11+ / 3.13, FastAPI, Uvicorn, pandas, SQLite, Pydantic
+- **Backend**: Python 3.11+ / 3.13, FastAPI, Uvicorn, pandas, SQLite, Pydantic, Pytest
 - **Frontend**: HTML5, Vanilla CSS (Modern Slate & Glassmorphism Design System), JavaScript (ES6+), Chart.js (CDN)
 - **AI / LLM**: Google Gemini API via official `google-genai` SDK (`gemini-2.5-flash`)
-- **Persistence**: Embedded SQLite (`retail_copilot.db`) populated from calibrated CSVs
+- **Persistence**: Embedded SQLite (`retail_copilot.db`) with parameterized queries and indexes
 
 ---
 
@@ -89,14 +65,35 @@ Located in [`data/`](file:///c:/Users/Lenovo/Downloads/ps3/data):
 
 ---
 
+## API Documentation & Endpoints
+
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| `GET` | `/api/health` | System health, track ID, and version |
+| `GET` | `/api/dashboard` | Top-level KPI overview and active alert counts |
+| `GET` | `/api/products` | Complete catalogue with velocity, days of stock, and health tags |
+| `GET` | `/api/products/{product_id}` | Individual SKU detail, inventory, and specific alert history |
+| `GET` | `/api/stores` | Store network listing |
+| `GET` | `/api/sales` | Aggregate sales volume and revenue for time windows |
+| `GET` | `/api/inventory` | Inventory valuation and stock health distribution |
+| `GET` | `/api/alerts` | Prioritized operational alerts (Low stock, overstock, slow-moving) |
+| `GET` | `/api/analytics/sales` | Period-over-period comparisons (Current 7d vs Prev 7d), top & lowest sellers |
+| `GET` | `/api/analytics/inventory` | Forward-looking stockout projections and excess inventory analysis |
+| `GET` | `/api/recommendations` | Deterministic action recommendations with evidence & assumptions |
+| `GET` | `/api/config` | Returns active rule thresholds |
+| `POST` | `/api/config` | Manager updates to thresholds (low stock days, overstock days, etc.) |
+| `POST` | `/api/chat` | Natural-language query interface grounded with Gemini & deterministic fallback |
+
+---
+
 ## How Gemini is Used vs. Deterministic Python
 | Responsibility | Engine | Implementation |
 | :--- | :--- | :--- |
-| Metric Calculations | **Python** | Days of stock, averages, velocity ratios, and thresholds are computed in Python (`src/rules.py`). Gemini is never allowed to calculate or guess numbers. |
-| Intent Classification | **Python / Regex** | Maps questions to specific retail queries, product matches, and data windows. |
-| Synthesis & Explanations | **Gemini AI** | Converts verified Python numbers into concise, executive summaries for the store manager. |
-| Grounding & Evidence | **Python & Gemini** | Every response outputs a structured `data_used` block displaying exact inputs, timestamps, and filters. |
-| Offline Continuity | **Python Engine** | If `GEMINI_API_KEY` is not provided or the network is unavailable, a deterministic response generator handles the query with identical numbers and zero disruption. |
+| Metric Calculations | **Python** | Days of stock, averages, velocity ratios, and thresholds are computed in Python (`src/inventory_service.py`, `src/sales_service.py`). Gemini is never allowed to calculate or guess numbers. |
+| Intent Classification | **Python / Regex** | Maps questions to specific retail queries, product matches, and data windows (`src/chat_service.py`). |
+| Synthesis & Explanations | **Gemini AI** | Converts verified Python numbers into concise, executive summaries for the store manager (`src/gemini_service.py`). |
+| Grounding & Evidence | **Python & Gemini** | Every response outputs a structured `evidence` object displaying exact data sources, formulas, and parameters. |
+| Offline Continuity | **Python Engine** | If `GEMINI_API_KEY` is not provided or network is down, the built-in deterministic response generator produces full answers with identical numbers. |
 
 ---
 
@@ -117,8 +114,8 @@ cd Sales-Inventory-Copilot
 pip install -r requirements.txt
 ```
 
-### 3. (Optional) Configure Gemini API Key
-To enable Gemini natural-language synthesis:
+### 3. Configure Gemini API Key
+Configure your Gemini API key in your environment or local `.env` file (which is git-ignored):
 ```bash
 # Windows (PowerShell)
 $env:GEMINI_API_KEY="your_actual_api_key_here"
@@ -129,7 +126,6 @@ set GEMINI_API_KEY=your_actual_api_key_here
 # Linux / macOS
 export GEMINI_API_KEY="your_actual_api_key_here"
 ```
-> **Note**: If `GEMINI_API_KEY` is not configured, the copilot will automatically use its built-in deterministic Python response generator with full numerical accuracy.
 
 ---
 
@@ -141,7 +137,14 @@ python app.py
 Open your browser and navigate to:
 **[http://localhost:8000](http://localhost:8000)**
 
-*No secondary terminal or separate frontend build command required.*
+---
+
+## Running Backend Tests
+Execute the complete automated test suite:
+```bash
+python -m pytest tests/test_backend.py -v
+```
+All 17 test cases validate rule calculations, period comparisons, stockout forecasts, and API contracts.
 
 ---
 
@@ -176,5 +179,5 @@ Open your browser and navigate to:
 ---
 
 ## Demo Video & Screenshots
-- **Interactive Browser Demonstration Recording**: Included in repo documentation.
-- **API Documentation**: Available at `http://localhost:8000/docs`.
+- **Interactive Browser Demonstration Recording**: Included in repository artifacts (`copilot_dashboard_demo.webp`).
+- **Interactive OpenAPI Documentation**: Available live at `http://localhost:8000/docs`.
