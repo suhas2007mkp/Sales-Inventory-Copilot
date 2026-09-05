@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sales & Inventory Copilot | Retail Intelligence</title>
+  <meta name="description" content="Intelligent Sales and Inventory Copilot for retail store managers with deterministic analytics and grounded GenAI recommendations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar" id="main-sidebar">
+      <div class="sidebar-header">
+        <div class="brand-logo">
+          <div class="logo-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+              <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+              <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+          </div>
+          <div class="brand-text">
+            <h2>RetailCopilot</h2>
+            <span class="track-badge">PS03 HACKATHON</span>
+          </div>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <button class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+          <span>Dashboard</span>
+        </button>
+        <button class="nav-item" id="nav-copilot" onclick="switchTab('copilot')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+          <span>AI Copilot</span>
+          <span class="pulse-chip">AI</span>
+        </button>
+        <button class="nav-item" id="nav-alerts" onclick="switchTab('alerts')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+          <span>Attention Required</span>
+          <span class="badge badge-alert" id="sidebar-alert-count">0</span>
+        </button>
+        <button class="nav-item" id="nav-inventory" onclick="switchTab('inventory')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+          <span>Inventory Matrix</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-pill">
+          <span class="status-dot"></span>
+          <span id="system-status-text">Engine: Deterministic Python</span>
+        </div>
+        <button class="btn-config" id="btn-open-config" onclick="openConfigModal()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+          <span>Threshold Rules</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <h1 id="page-title">Store Manager Dashboard</h1>
+          <p class="subtitle" id="page-subtitle">Real-time inventory velocity, stock-out forecasts & grounded recommendations</p>
+        </div>
+        <div class="topbar-right">
+          <div class="store-selector-wrapper">
+            <label for="store-select">Store:</label>
+            <select id="store-select" onchange="onStoreChange()">
+              <option value="">All Stores (Consolidated)</option>
+            </select>
+          </div>
+          <button class="btn-primary-copilot" id="btn-quick-copilot" onclick="switchTab('copilot')">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+            <span>Ask Copilot</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- TAB 1: DASHBOARD -->
+      <section class="tab-pane active" id="pane-dashboard">
+        <!-- KPI Metrics Grid -->
+        <div class="metrics-grid">
+          <div class="metric-card card-glow-indigo">
+            <div class="metric-icon bg-indigo">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </div>
+            <div class="metric-details">
+              <span class="metric-label">Today's Revenue</span>
+              <h3 class="metric-value" id="kpi-today-revenue">₹0</h3>
+              <span class="metric-sub" id="kpi-today-units">0 units sold</span>
+            </div>
+          </div>
+
+          <div class="metric-card card-glow-rose" onclick="switchTab('alerts', 'LOW_STOCK')">
+            <div class="metric-icon bg-rose">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="7.86 2 16.14 2 22 7.86 22 16.14 16.14 22 7.86 22 2 16.14 2 7.86 7.86 2"></polygon><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+            </div>
+            <div class="metric-details">
+              <span class="metric-label">Likely Stock-Outs</span>
+              <h3 class="metric-value text-rose" id="kpi-low-stock">0</h3>
+              <span class="metric-sub text-rose">&lt; 5 days supply</span>
+            </div>
+          </div>
+
+          <div class="metric-card card-glow-amber" onclick="switchTab('alerts', 'OVERSTOCK')">
+            <div class="metric-icon bg-amber">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
+            </div>
+            <div class="metric-details">
+              <span class="metric-label">Overstocked Items</span>
+              <h3 class="metric-value text-amber" id="kpi-overstock">0</h3>
+              <span class="metric-sub text-amber">&gt; 45 days supply</span>
+            </div>
+          </div>
+
+          <div class="metric-card card-glow-cyan" onclick="switchTab('alerts', 'SLOW_MOVING')">
+            <div class="metric-icon bg-cyan">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <div class="metric-details">
+              <span class="metric-label">Slow-Moving Stock</span>
+              <h3 class="metric-value text-cyan" id="kpi-slow-moving">0</h3>
+              <span class="metric-sub text-cyan">&lt; 0.15 units/day</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Attention Required Alert Banner -->
+        <section class="attention-section">
+          <div class="section-header">
+            <div class="header-title">
+              <div class="alert-icon-pulse">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              </div>
+              <h2>Attention Required Today</h2>
+              <span class="badge badge-urgent" id="attention-badge">Critical Alerts</span>
+            </div>
+            <button class="btn-ghost" onclick="switchTab('alerts')">View All Recommendations &rarr;</button>
+          </div>
+          <div class="alerts-horizontal-scroller" id="top-alerts-container">
+            <div class="loading-spinner">Loading attention alerts...</div>
+          </div>
+        </section>
+
+        <!-- Charts Grid -->
+        <div class="charts-grid">
+          <!-- Chart 1: Sales Trend -->
+          <div class="chart-card card-large">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Sales & Revenue Trend (30 Days)</h3>
+                <p>Daily sales trajectory across selected store operations</p>
+              </div>
+              <div class="chart-tag">Daily Run Rate</div>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-sales-trend"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Top-Selling Products -->
+          <div class="chart-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Top 5 Selling Products</h3>
+                <p>By total 30-day revenue</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-top-products"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 3: Stock vs Safety Stock Buffer -->
+          <div class="chart-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Current Stock vs Safety Buffer</h3>
+                <p>Identifies inventory deficit & surplus</p>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="chart-stock-levels"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 4: Sales by Category -->
+          <div class="chart-card">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>Sales by Category</h3>
+                <p>Portfolio mix and share of wallet</p>
+              </div>
+            </div>
+            <div class="chart-container doughnut-wrapper">
+              <canvas id="chart-category"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: AI COPILOT -->
+      <section class="tab-pane" id="pane-copilot">
+        <div class="copilot-layout">
+          <!-- Copilot Main Chat Feed -->
+          <div class="copilot-chat-box">
+            <div class="copilot-header">
+              <div class="copilot-title">
+                <div class="copilot-avatar">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2a10 10 0 1 0 10 10H12V2z"></path><path d="M12 12L2.5 7.5"></path><path d="M12 12v10"></path></svg>
+                </div>
+                <div>
+                  <h3>Retail Intelligence Copilot</h3>
+                  <p class="copilot-subtitle">Strictly grounded in deterministic Python calculations & SQLite data</p>
+                </div>
+              </div>
+              <div class="copilot-badges">
+                <span class="grounding-badge">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+                  Zero Hallucinations
+                </span>
+              </div>
+            </div>
+
+            <!-- Suggested Prompt Chips -->
+            <div class="prompt-chips-section">
+              <span class="chips-label">Quick Questions:</span>
+              <div class="chips-container">
+                <button class="chip" onclick="askQuestion('What products are running out?')">What products are running out?</button>
+                <button class="chip" onclick="askQuestion('What products are overstocked?')">What products are overstocked?</button>
+                <button class="chip" onclick="askQuestion('What needs attention today?')">What needs attention today?</button>
+                <button class="chip" onclick="askQuestion('Which product sold the most this month?')">Which product sold the most this month?</button>
+                <button class="chip" onclick="askQuestion('How did boAt Rockerz 255 perform this month?')">How did boAt Rockerz 255 perform?</button>
+                <button class="chip" onclick="askQuestion('Show me products with declining sales.')">Show me products with declining sales</button>
+                <button class="chip chip-hard" onclick="askQuestion('Which product will run out next week?')">Which product will run out next week?</button>
+                <button class="chip chip-hard" onclick="askQuestion('Why did sales decrease for Dettol Handwash?')">Why did sales decrease for Dettol?</button>
+              </div>
+            </div>
+
+            <!-- Chat Messages Log -->
+            <div class="chat-messages" id="chat-messages-container">
+              <!-- Welcome Initial Message -->
+              <div class="message-card message-bot">
+                <div class="message-header">
+                  <span class="sender-name">Copilot Intelligence</span>
+                  <span class="message-time">Just now</span>
+                </div>
+                <div class="message-body">
+                  <p>Hello! I am your <strong>Sales & Inventory Copilot</strong>. I query your stores, daily sales, and stock numbers using deterministic Python calculations and ground every answer with real data and actionable recommendations.</p>
+                  <p>Ask a question or click any prompt chip above to begin.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Input Area -->
+            <div class="chat-input-area">
+              <form id="chat-form" onsubmit="handleChatSubmit(event)">
+                <div class="input-wrapper">
+                  <input type="text" id="copilot-input" placeholder="Ask about stockouts, overstock, sales velocity, or product trends..." autocomplete="off">
+                  <button type="submit" id="btn-send-chat" class="btn-send">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                    <span>Ask</span>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: ATTENTION REQUIRED (ALERTS) -->
+      <section class="tab-pane" id="pane-alerts">
+        <div class="tab-header-bar">
+          <div>
+            <h2>Attention Required & Action Recommendations</h2>
+            <p>Deterministic rules engine alerts showing exact supporting numbers, assumptions, and suggested actions</p>
+          </div>
+          <div class="filter-group">
+            <select id="alert-filter-type" onchange="filterAlerts()">
+              <option value="ALL">All Alert Types</option>
+              <option value="LOW_STOCK">Low Stock (Stock-Out Risk)</option>
+              <option value="OVERSTOCK">Overstocked Items</option>
+              <option value="SLOW_MOVING">Slow-Moving Products</option>
+              <option value="SALES_SPIKE">Sales Spikes</option>
+              <option value="SALES_DROP">Sales Drops</option>
+            </select>
+            <select id="alert-filter-severity" onchange="filterAlerts()">
+              <option value="ALL">All Severities</option>
+              <option value="URGENT">Urgent Only</option>
+              <option value="WARNING">Warning</option>
+              <option value="OPPORTUNITY">Opportunity</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="alerts-feed-grid" id="all-alerts-container">
+          <div class="loading-spinner">Loading alert recommendations...</div>
+        </div>
+      </section>
+
+      <!-- TAB 4: INVENTORY MATRIX TABLE -->
+      <section class="tab-pane" id="pane-inventory">
+        <div class="tab-header-bar">
+          <div>
+            <h2>Inventory & Velocity Matrix</h2>
+            <p>Comprehensive catalogue with calculated run-rates and days of supply</p>
+          </div>
+          <div class="table-search-group">
+            <input type="text" id="inventory-search" placeholder="Search product name or SKU..." oninput="filterInventoryTable()">
+            <select id="inventory-category-filter" onchange="filterInventoryTable()">
+              <option value="ALL">All Categories</option>
+            </select>
+            <select id="inventory-status-filter" onchange="filterInventoryTable()">
+              <option value="ALL">All Statuses</option>
+              <option value="LOW_STOCK">Low Stock</option>
+              <option value="OVERSTOCK">Overstock</option>
+              <option value="SLOW_MOVING">Slow Moving</option>
+              <option value="SALES_SPIKE">Sales Spike</option>
+              <option value="SALES_DROP">Sales Drop</option>
+              <option value="HEALTHY">Healthy</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-responsive">
+            <table class="data-table" id="inventory-table">
+              <thead>
+                <tr>
+                  <th>Product</th>
+                  <th>Category</th>
+                  <th>Price (₹)</th>
+                  <th>Current Stock</th>
+                  <th>7d Velocity</th>
+                  <th>30d Sales</th>
+                  <th>Days of Stock</th>
+                  <th>Health Status</th>
+                </tr>
+              </thead>
+              <tbody id="inventory-table-body">
+                <tr><td colspan="8" class="text-center">Loading catalogue...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Config Rules Modal -->
+  <div class="modal-backdrop" id="config-modal">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3>Configure Inventory & Rule Thresholds</h3>
+        <button class="btn-close" onclick="closeConfigModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">Adjust deterministic calculation thresholds. Changes recalculate days of stock and alert triggers immediately.</p>
+        <div class="form-group">
+          <label for="cfg-low-stock">Low Stock Days Threshold (Days):</label>
+          <input type="number" id="cfg-low-stock" step="0.5" min="1" max="30">
+          <small>Products with supply less than this are flagged as likely stockouts.</small>
+        </div>
+        <div class="form-group">
+          <label for="cfg-overstock">Overstock Days Threshold (Days):</label>
+          <input type="number" id="cfg-overstock" step="1" min="15" max="180">
+          <small>Products with supply exceeding this are flagged as overstocked.</small>
+        </div>
+        <div class="form-group">
+          <label for="cfg-slow-moving">Slow Moving Max Daily Velocity (Units/Day):</label>
+          <input type="number" id="cfg-slow-moving" step="0.05" min="0.01" max="2.0">
+          <small>Selling fewer than this over 30 days flags the product as stagnant.</small>
+        </div>
+        <div class="form-group">
+          <label for="cfg-spike">Sales Spike Multiplier (x Baseline):</label>
+          <input type="number" id="cfg-spike" step="0.1" min="1.1" max="5.0">
+          <small>Recent 7-day velocity exceeding this multiple of baseline triggers a spike alert.</small>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeConfigModal()">Cancel</button>
+        <button class="btn-primary" onclick="saveConfig()">Save Thresholds</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>

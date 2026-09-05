@@ -1,0 +1,21 @@
+product_id,product_name,category,price,supplier
+PRD001,Tata Tea Gold 500g,Groceries & Staples,310.00,Tata Consumer Products
+PRD002,Aashirvaad Shudh Chakki Atta 5kg,Groceries & Staples,245.00,ITC Limited
+PRD003,Fortune Sunlite Sunflower Oil 1L,Groceries & Staples,135.00,Adani Wilmar
+PRD004,Tata Salt Vacuum Evaporated 1kg,Groceries & Staples,28.00,Tata Consumer Products
+PRD005,India Gate Basmati Rice Feast Rozzana 1kg,Groceries & Staples,115.00,KRBL Limited
+PRD006,Maggi 2-Minute Masala Noodles 70g,Snacks & Beverages,14.00,Nestle India
+PRD007,Haldiram's Nagpur Bhujia 400g,Snacks & Beverages,120.00,Haldiram Foods
+PRD008,Cadbury Dairy Milk Silk 150g,Snacks & Beverages,175.00,Mondelez India
+PRD009,Red Bull Energy Drink 250ml,Snacks & Beverages,125.00,Red Bull India
+PRD010,Amul Butter Pasteurised 500g,Dairy & Chilled,275.00,Gujarat Co-op Milk Marketing
+PRD011,Dettol Liquid Handwash Refill 750ml,Personal Care,109.00,Reckitt Benckiser
+PRD012,Colgate MaxFresh Peppermint 150g,Personal Care,110.00,Colgate-Palmolive
+PRD013,Dove Intense Repair Shampoo 340ml,Personal Care,299.00,Hindustan Unilever
+PRD014,Nivea Soft Light Moisturizing Cream 200ml,Personal Care,320.00,Nivea India
+PRD015,boAt Rockerz 255 Pro+ Wireless Neckband,Electronics & Accessories,999.00,Imagine Marketing (boAt)
+PRD016,Portronics Konnect Pro Type-C Cable 1m,Electronics & Accessories,199.00,Portronics Digital
+PRD017,Mi 10000mAh Power Bank 3i,Electronics & Accessories,1299.00,Xiaomi India
+PRD018,Surf Excel Matic Front Load Liquid Detergent 2L,Home & Kitchen,460.00,Hindustan Unilever
+PRD019,Prestige Popular Aluminium Pressure Cooker 3L,Home & Kitchen,1450.00,TTK Prestige
+PRD020,Havells 4-Socket Surge Protector Extension Board,Home & Kitchen,599.00,Havells India
